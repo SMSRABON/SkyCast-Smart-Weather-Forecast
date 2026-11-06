@@ -1,0 +1,1574 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101b35">
+<title>SkyCast — Smart Weather & Forecast</title>
+
+<style>
+:root{
+--bg:#eef3fb;
+--panel:rgba(255,255,255,.88);
+--panel2:#f5f8ff;
+--text:#17233d;
+--muted:#71809c;
+--line:rgba(105,126,166,.18);
+--accent:#4776e6;
+--accent2:#70c7f5;
+--shadow:0 16px 42px rgba(32,55,99,.10);
+--good:#159b72;
+--warn:#d78b19;
+--bad:#d94b59
+}
+
+*{box-sizing:border-box}
+
+html,body{
+width:100%;
+max-width:100%;
+overflow-x:hidden;
+}
+
+body{
+margin:0;
+background:
+radial-gradient(circle at 12% 0%,#d9e9ff 0,transparent 32%),
+radial-gradient(circle at 90% 8%,#e6ddff 0,transparent 28%),
+var(--bg);
+color:var(--text);
+font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+min-height:100vh;
+transition:.25s
+}
+
+body.dark{
+--bg:#0c1427;
+--panel:rgba(22,34,59,.92);
+--panel2:#172440;
+--text:#edf3ff;
+--muted:#9aa9c4;
+--line:rgba(180,199,235,.13);
+--accent:#81a6ff;
+--accent2:#6dd4f0;
+--shadow:0 18px 50px rgba(0,0,0,.25);
+background:
+radial-gradient(circle at 10% 0%,#1d3159 0,transparent 35%),
+radial-gradient(circle at 90% 5%,#30254e 0,transparent 30%),
+var(--bg)
+}
+
+button,input{font:inherit}
+button{cursor:pointer;border:0}
+
+.app{
+width:100%;
+max-width:1220px;
+min-width:0;
+margin:auto;
+padding:26px 22px 42px
+}
+
+.topbar{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:18px;
+margin-bottom:24px
+}
+
+.brand{
+display:flex;
+align-items:center;
+gap:12px
+}
+
+.logo{
+width:45px;
+height:45px;
+border-radius:15px;
+background:linear-gradient(135deg,#4d7df1,#6dd3ed);
+display:grid;
+place-items:center;
+color:white;
+font-size:25px;
+box-shadow:0 8px 22px #4776e644
+}
+
+.brand h1{
+font-size:20px;
+margin:0;
+letter-spacing:.2px
+}
+
+.brand p{
+margin:3px 0 0;
+color:var(--muted);
+font-size:12px
+}
+
+.actions{
+display:flex;
+gap:9px;
+align-items:center
+}
+
+.iconbtn,.langbtn{
+background:var(--panel);
+border:1px solid var(--line);
+color:var(--text);
+padding:10px 13px;
+border-radius:13px;
+box-shadow:var(--shadow);
+font-weight:650
+}
+
+.iconbtn:hover,.langbtn:hover{
+transform:translateY(-1px)
+}
+
+.searchrow{
+display:flex;
+gap:10px;
+margin-bottom:18px;
+min-width:0
+}
+
+.searchbox{
+flex:1;
+min-width:0;
+display:flex;
+align-items:center;
+gap:10px;
+background:var(--panel);
+border:1px solid var(--line);
+border-radius:16px;
+padding:0 15px;
+box-shadow:var(--shadow)
+}
+
+.searchbox input{
+width:100%;
+min-width:0;
+padding:15px 0;
+border:0;
+outline:0;
+background:transparent;
+color:var(--text);
+font-size:15px
+}
+
+.searchbox input::placeholder{
+color:var(--muted)
+}
+
+.primary,.secondary{
+border-radius:14px;
+padding:0 18px;
+font-weight:750;
+white-space:nowrap
+}
+
+.primary{
+background:linear-gradient(135deg,#4776e6,#5b9bea);
+color:white;
+box-shadow:0 8px 20px #4776e644
+}
+
+.secondary{
+background:var(--panel);
+border:1px solid var(--line);
+color:var(--text);
+padding:13px 15px
+}
+
+.status{
+min-height:22px;
+color:var(--muted);
+font-size:13px;
+margin:0 2px 13px
+}
+
+.status.error{color:var(--bad)}
+
+.grid{
+display:grid;
+width:100%;
+min-width:0;
+grid-template-columns:minmax(0,1.45fr) minmax(300px,.85fr);
+gap:17px;
+align-items:start
+}
+
+.grid>*,
+.rightcol,
+.rightcol>*,
+.grid>div{
+min-width:0;
+max-width:100%
+}
+
+.card{
+background:var(--panel);
+border:1px solid var(--line);
+border-radius:22px;
+padding:20px;
+box-shadow:var(--shadow);
+backdrop-filter:blur(14px);
+min-width:0;
+max-width:100%
+}
+
+.hero{
+position:relative;
+overflow:hidden;
+min-height:275px;
+background:linear-gradient(125deg,rgba(62,112,219,.97),rgba(89,174,222,.92));
+color:#fff;
+border:0
+}
+
+.hero:after{
+content:"";
+position:absolute;
+width:290px;
+height:290px;
+border-radius:50%;
+right:-70px;
+top:-115px;
+background:rgba(255,255,255,.12);
+box-shadow:0 0 0 35px rgba(255,255,255,.05),0 0 0 75px rgba(255,255,255,.035)
+}
+
+.hero>*{
+position:relative;
+z-index:1
+}
+
+.herohead{
+display:flex;
+justify-content:space-between;
+gap:15px;
+align-items:flex-start
+}
+
+.eyebrow{
+font-size:12px;
+text-transform:uppercase;
+letter-spacing:1.4px;
+opacity:.8;
+font-weight:750
+}
+
+.place{
+font-size:25px;
+font-weight:800;
+margin:6px 0 2px;
+overflow-wrap:anywhere
+}
+
+.date{
+opacity:.82;
+font-size:13px
+}
+
+.weathericon{
+font-size:67px;
+line-height:1
+}
+
+.tempwrap{
+display:flex;
+align-items:center;
+gap:15px;
+margin-top:20px;
+min-width:0
+}
+
+.temp{
+font-size:76px;
+line-height:1;
+font-weight:800;
+letter-spacing:-4px
+}
+
+.degree{
+font-size:28px;
+vertical-align:top;
+letter-spacing:0
+}
+
+.condition{
+font-size:17px;
+font-weight:700
+}
+
+.feels{
+font-size:13px;
+opacity:.82;
+margin-top:5px
+}
+
+.herofoot{
+display:flex;
+gap:23px;
+flex-wrap:wrap;
+margin-top:22px;
+font-size:13px
+}
+
+.herofoot b{
+display:block;
+font-size:16px;
+margin-top:3px
+}
+
+.sectionhead{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:12px;
+margin:0 0 15px
+}
+
+.sectionhead h2{
+font-size:16px;
+margin:0
+}
+
+.subtle{
+font-size:12px;
+color:var(--muted)
+}
+
+.metrics{
+display:grid;
+grid-template-columns:repeat(2,minmax(0,1fr));
+gap:12px;
+margin-top:17px;
+min-width:0
+}
+
+.metric{
+padding:15px;
+border-radius:17px;
+background:var(--panel2);
+border:1px solid var(--line);
+min-width:0
+}
+
+.metric .mi{font-size:19px}
+
+.metric .ml{
+font-size:12px;
+color:var(--muted);
+margin:8px 0 3px
+}
+
+.metric strong{font-size:19px}
+
+.rightcol{
+display:grid;
+gap:17px;
+align-content:start
+}
+
+.aqi-number{
+font-size:33px;
+font-weight:850
+}
+
+.aqibar{
+height:9px;
+background:var(--panel2);
+border-radius:20px;
+overflow:hidden;
+margin:13px 0 9px
+}
+
+.aqibar span{
+display:block;
+height:100%;
+width:0;
+background:linear-gradient(90deg,#27b67b,#d7b33c,#e65c5c);
+border-radius:20px
+}
+
+.aqi-grid{
+display:grid;
+grid-template-columns:repeat(2,minmax(0,1fr));
+gap:12px;
+margin-top:14px
+}
+
+.aqi-grid div{
+background:var(--panel2);
+border:1px solid var(--line);
+border-radius:13px;
+padding:11px;
+min-width:0;
+overflow-wrap:anywhere
+}
+
+.aqi-grid small{
+display:block;
+color:var(--muted);
+font-size:11px
+}
+
+.aqi-grid b{
+font-size:16px;
+display:block;
+margin-top:4px
+}
+
+.alert{
+display:flex;
+gap:11px;
+padding:12px;
+border-radius:14px;
+background:var(--panel2);
+border:1px solid var(--line);
+margin-top:10px;
+font-size:13px;
+line-height:1.45
+}
+
+.alert .alerticon{font-size:19px}
+.alert.good{border-left:3px solid var(--good)}
+.alert.warn{border-left:3px solid var(--warn)}
+.alert.bad{border-left:3px solid var(--bad)}
+
+.hourly{
+display:flex;
+gap:11px;
+overflow-x:auto;
+padding:2px 1px 8px;
+scrollbar-width:thin;
+width:100%;
+max-width:100%;
+min-width:0
+}
+
+.hour{
+flex:0 0 83px;
+text-align:center;
+padding:13px 8px;
+border-radius:15px;
+background:var(--panel2);
+border:1px solid var(--line)
+}
+
+.hour .hicon{
+font-size:24px;
+margin:7px 0
+}
+
+.hour b{font-size:16px}
+
+.hour small{
+color:var(--muted);
+font-size:11px
+}
+
+.week{
+display:grid;
+gap:9px;
+min-width:0
+}
+
+.day{
+display:grid;
+grid-template-columns:minmax(0,1.05fr) minmax(24px,.7fr) minmax(35px,1.5fr) minmax(65px,.7fr);
+align-items:center;
+gap:10px;
+padding:10px 12px;
+border-radius:13px;
+background:var(--panel2);
+font-size:13px;
+min-width:0
+}
+
+.dayname{font-weight:700}
+
+.dayicon{
+font-size:20px;
+margin-right:7px
+}
+
+.range{
+height:7px;
+border-radius:20px;
+background:linear-gradient(90deg,#6fc5ee,#f3bf65);
+position:relative
+}
+
+.daytemps{
+color:var(--muted);
+text-align:right;
+white-space:nowrap;
+font-size:11px
+}
+
+.sunrow{
+display:grid;
+grid-template-columns:repeat(2,minmax(0,1fr));
+gap:12px
+}
+
+.sunbox{
+background:var(--panel2);
+border:1px solid var(--line);
+padding:14px;
+border-radius:15px;
+min-width:0
+}
+
+.sunbox small{color:var(--muted)}
+
+.sunbox b{
+display:block;
+font-size:19px;
+margin-top:5px
+}
+
+.mapframe{
+width:100%;
+height:255px;
+border:0;
+border-radius:15px;
+background:var(--panel2)
+}
+
+.footer{
+text-align:center;
+color:var(--muted);
+font-size:12px;
+padding:25px 0 0
+}
+
+.footer b{color:var(--text)}
+
+.loading{
+opacity:.65;
+pointer-events:none
+}
+
+.empty{
+padding:22px;
+text-align:center;
+color:var(--muted);
+background:var(--panel2);
+border-radius:14px;
+font-size:13px
+}
+
+/* Tablet layout */
+@media(max-width:900px){
+.grid{
+grid-template-columns:minmax(0,1fr)
+}
+
+.rightcol{
+grid-template-columns:repeat(2,minmax(0,1fr))
+}
+
+.metrics{
+grid-template-columns:repeat(2,minmax(0,1fr))
+}
+}
+
+/* Mobile layout */
+@media(max-width:620px){
+.app{
+padding:16px 12px 28px
+}
+
+.topbar{
+align-items:flex-start;
+gap:10px
+}
+
+.brand h1{font-size:17px}
+.brand p{font-size:11px}
+
+.actions{gap:6px}
+
+.iconbtn,.langbtn{
+padding:9px 10px;
+font-size:12px
+}
+
+.searchrow{flex-wrap:wrap}
+
+.searchbox{flex-basis:100%}
+
+.primary,.secondary{
+height:45px;
+flex:1
+}
+
+.rightcol{
+grid-template-columns:minmax(0,1fr)
+}
+
+.hero{
+padding:18px;
+min-height:250px
+}
+
+.place{font-size:21px}
+
+.temp{
+font-size:clamp(52px,14vw,65px)
+}
+
+.weathericon{
+font-size:clamp(45px,12vw,56px)
+}
+
+.metrics{gap:9px}
+
+.metric{padding:12px}
+
+.card{padding:15px}
+
+.day{
+grid-template-columns:minmax(0,1fr) 26px minmax(35px,1fr) minmax(60px,.8fr);
+gap:6px;
+font-size:11px;
+padding:9px 8px
+}
+
+.daytemps{font-size:11px}
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<header class="topbar">
+<div class="brand">
+<div class="logo">☀</div>
+<div>
+<h1>SkyCast</h1>
+<p data-i18n="tagline">Smart Weather & Forecast</p>
+</div>
+</div>
+
+<div class="actions">
+<button class="langbtn" id="langBtn" aria-label="Change language">বাংলা</button>
+<button class="iconbtn" id="themeBtn" aria-label="Toggle theme">🌙</button>
+</div>
+</header>
+
+<div class="searchrow">
+<label class="searchbox">
+<span>⌕</span>
+<input id="cityInput" type="search" placeholder="Search city (e.g. Khulna, Dhaka, London)" autocomplete="off">
+</label>
+
+<button class="primary" id="searchBtn" data-i18n="search">Search</button>
+
+<button class="secondary" id="locationBtn" title="Use my location">
+◎ <span data-i18n="myLocation">My Location</span>
+</button>
+</div>
+
+<div class="status" id="status" role="status">
+Search for a city to view live weather.
+</div>
+
+<main id="dashboard">
+<div class="grid">
+
+<div>
+
+<section class="card hero" id="hero">
+
+<div class="herohead">
+<div>
+<div class="eyebrow" data-i18n="currentWeather">Current Weather</div>
+<div class="place" id="place">Khulna, Bangladesh</div>
+<div class="date" id="dateText">—</div>
+</div>
+
+<div class="weathericon" id="weatherIcon">🌤️</div>
+</div>
+
+<div class="tempwrap">
+<div class="temp">
+<span id="temperature">--</span><span class="degree">°</span>
+</div>
+
+<div>
+<div class="condition" id="condition">Loading weather…</div>
+<div class="feels">
+<span data-i18n="feelsLike">Feels like</span>
+<b id="feels">--°</b>
+</div>
+</div>
+</div>
+
+<div class="herofoot">
+<div>🌡️ <span data-i18n="highLow">Today</span><b id="highlow">--° / --°</b></div>
+<div>☔ <span data-i18n="rainChance">Rain chance</span><b id="rainchance">--%</b></div>
+<div>🕒 <span data-i18n="updated">Updated</span><b id="updated">--</b></div>
+</div>
+
+</section>
+
+<section class="metrics" aria-label="Weather details">
+
+<div class="metric">
+<div class="mi">💧</div>
+<div class="ml" data-i18n="humidity">Humidity</div>
+<strong id="humidity">--%</strong>
+</div>
+
+<div class="metric">
+<div class="mi">💨</div>
+<div class="ml" data-i18n="windSpeed">Wind Speed</div>
+<strong id="wind">-- km/h</strong>
+</div>
+
+<div class="metric">
+<div class="mi">🌡️</div>
+<div class="ml" data-i18n="pressure">Pressure</div>
+<strong id="pressure">-- hPa</strong>
+</div>
+
+<div class="metric">
+<div class="mi">☀️</div>
+<div class="ml" data-i18n="uvIndex">UV Index</div>
+<strong id="uv">--</strong>
+</div>
+
+</section>
+
+<section class="card" style="margin-top:17px">
+<div class="sectionhead">
+<h2 data-i18n="hourlyForecast">Hourly Forecast</h2>
+<span class="subtle" data-i18n="next24">Next 24 hours</span>
+</div>
+
+<div class="hourly" id="hourly">
+<div class="empty">Loading hourly forecast…</div>
+</div>
+</section>
+
+<section class="card" style="margin-top:17px">
+<div class="sectionhead">
+<h2 data-i18n="sevenDay">7-Day Forecast</h2>
+<span class="subtle" data-i18n="localTime">Local time</span>
+</div>
+
+<div class="week" id="week">
+<div class="empty">Loading forecast…</div>
+</div>
+</section>
+
+</div>
+
+<aside class="rightcol">
+
+<section class="card">
+<div class="sectionhead">
+<h2 data-i18n="airQuality">Air Quality</h2>
+<span class="subtle">US AQI</span>
+</div>
+
+<div class="aqi-number" id="aqiValue">--</div>
+<b id="aqiLabel" class="subtle">Loading air quality…</b>
+
+<div class="aqibar"><span id="aqiBar"></span></div>
+
+<div class="subtle" id="aqiAdvice">Air quality information</div>
+
+<div class="aqi-grid">
+<div><small>PM2.5</small><b id="pm25">-- µg/m³</b></div>
+<div><small>PM10</small><b id="pm10">-- µg/m³</b></div>
+<div><small>O₃</small><b id="ozone">-- µg/m³</b></div>
+<div><small>NO₂</small><b id="no2">-- µg/m³</b></div>
+</div>
+</section>
+
+<section class="card">
+<div class="sectionhead">
+<h2 data-i18n="weatherAlerts">Weather Notices</h2>
+<span class="subtle" data-i18n="auto">Auto</span>
+</div>
+
+<div id="alerts">
+<div class="empty">Checking weather conditions…</div>
+</div>
+
+<p class="subtle" style="margin:12px 0 0" data-i18n="alertDisclaimer">
+These are automated guidance notices, not official emergency warnings.
+</p>
+</section>
+
+<section class="card">
+<div class="sectionhead">
+<h2 data-i18n="sunTimes">Sunrise & Sunset</h2>
+</div>
+
+<div class="sunrow">
+<div class="sunbox">
+<small>🌅 <span data-i18n="sunrise">Sunrise</span></small>
+<b id="sunrise">--:--</b>
+</div>
+
+<div class="sunbox">
+<small>🌇 <span data-i18n="sunset">Sunset</span></small>
+<b id="sunset">--:--</b>
+</div>
+</div>
+</section>
+
+<section class="card">
+<div class="sectionhead">
+<h2 data-i18n="locationMap">Location Map</h2>
+<span class="subtle" id="coords">—</span>
+</div>
+
+<iframe
+class="mapframe"
+id="map"
+title="Map showing selected weather location"
+loading="lazy"
+referrerpolicy="no-referrer-when-downgrade"
+src="https://www.openstreetmap.org/export/embed.html?bbox=89.45%2C22.75%2C89.65%2C22.95&layer=mapnik&marker=22.82%2C89.55">
+</iframe>
+</section>
+
+</aside>
+</div>
+</main>
+
+<footer class="footer">
+Weather data: <b>Open-Meteo</b> · Map: <b>OpenStreetMap</b><br>
+<span data-i18n="refreshNote">Weather data refreshes automatically every 15 minutes.</span>
+<br><br>
+<b>Made By MD AWAL SHEIKH</b>
+</footer>
+
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+const translations = {
+
+en:{
+tagline:"Smart Weather & Forecast",
+search:"Search",
+myLocation:"My Location",
+currentWeather:"Current Weather",
+feelsLike:"Feels like",
+highLow:"Today",
+rainChance:"Rain chance",
+updated:"Updated",
+humidity:"Humidity",
+windSpeed:"Wind Speed",
+pressure:"Pressure",
+uvIndex:"UV Index",
+hourlyForecast:"Hourly Forecast",
+next24:"Next 24 hours",
+sevenDay:"7-Day Forecast",
+localTime:"Local time",
+airQuality:"Air Quality",
+weatherAlerts:"Weather Notices",
+auto:"Auto",
+alertDisclaimer:"These are automated guidance notices, not official emergency warnings.",
+sunTimes:"Sunrise & Sunset",
+sunrise:"Sunrise",
+sunset:"Sunset",
+locationMap:"Location Map",
+refreshNote:"Weather data refreshes automatically every 15 minutes.",
+loading:"Loading weather data…",
+ready:"Weather updated successfully.",
+searchError:"City not found. Try another city name.",
+locationError:"Could not access your location. Please allow location permission.",
+apiError:"Could not load weather data. Please check your internet connection and try again.",
+goodAir:"Good",
+moderateAir:"Moderate",
+sensitiveAir:"Unhealthy for sensitive groups",
+unhealthyAir:"Unhealthy",
+veryUnhealthyAir:"Very unhealthy",
+hazardousAir:"Hazardous",
+noAlerts:"No notable weather concerns detected in the available forecast.",
+rainAlert:"Rain is expected soon. Consider carrying an umbrella.",
+stormAlert:"Thunderstorm conditions are forecast. Stay alert and check local official updates.",
+heatAlert:"High temperature expected. Drink water and avoid prolonged outdoor activity.",
+coldAlert:"Low temperature expected. Wear suitable clothing.",
+windAlert:"Strong winds are forecast. Be careful around trees and loose objects.",
+uvAlert:"High UV index. Use sun protection when outdoors.",
+aqiAlert:"Air quality is poor. Sensitive people should reduce prolonged outdoor exertion.",
+clear:"Clear sky",
+mainlyClear:"Mainly clear",
+partlyCloudy:"Partly cloudy",
+overcast:"Overcast",
+fog:"Fog",
+drizzle:"Drizzle",
+freezingDrizzle:"Freezing drizzle",
+rain:"Rain",
+freezingRain:"Freezing rain",
+snow:"Snow",
+rainShowers:"Rain showers",
+snowShowers:"Snow showers",
+thunderstorm:"Thunderstorm",
+unknown:"Weather condition",
+now:"Now"
+},
+
+bn:{
+tagline:"স্মার্ট আবহাওয়া ও পূর্বাভাস",
+search:"খুঁজুন",
+myLocation:"আমার অবস্থান",
+currentWeather:"বর্তমান আবহাওয়া",
+feelsLike:"অনুভূত তাপমাত্রা",
+highLow:"আজ",
+rainChance:"বৃষ্টির সম্ভাবনা",
+updated:"আপডেট",
+humidity:"আর্দ্রতা",
+windSpeed:"বাতাসের গতি",
+pressure:"বায়ুচাপ",
+uvIndex:"UV সূচক",
+hourlyForecast:"ঘণ্টাভিত্তিক পূর্বাভাস",
+next24:"পরবর্তী ২৪ ঘণ্টা",
+sevenDay:"৭ দিনের পূর্বাভাস",
+localTime:"স্থানীয় সময়",
+airQuality:"বায়ুর মান",
+weatherAlerts:"আবহাওয়া সতর্কতা",
+auto:"স্বয়ংক্রিয়",
+alertDisclaimer:"এগুলো স্বয়ংক্রিয় তথ্যভিত্তিক পরামর্শ, সরকারি জরুরি সতর্কবার্তা নয়।",
+sunTimes:"সূর্যোদয় ও সূর্যাস্ত",
+sunrise:"সূর্যোদয়",
+sunset:"সূর্যাস্ত",
+locationMap:"অবস্থানের মানচিত্র",
+refreshNote:"প্রতি ১৫ মিনিটে আবহাওয়ার তথ্য স্বয়ংক্রিয়ভাবে আপডেট হয়।",
+loading:"আবহাওয়ার তথ্য লোড হচ্ছে…",
+ready:"আবহাওয়ার তথ্য সফলভাবে আপডেট হয়েছে।",
+searchError:"শহর খুঁজে পাওয়া যায়নি। অন্য নাম দিয়ে চেষ্টা করুন।",
+locationError:"আপনার অবস্থান পাওয়া যায়নি। Location permission চালু করুন।",
+apiError:"আবহাওয়ার তথ্য লোড করা যায়নি। ইন্টারনেট সংযোগ পরীক্ষা করুন।",
+goodAir:"ভালো",
+moderateAir:"মাঝারি",
+sensitiveAir:"সংবেদনশীলদের জন্য অস্বাস্থ্যকর",
+unhealthyAir:"অস্বাস্থ্যকর",
+veryUnhealthyAir:"খুব অস্বাস্থ্যকর",
+hazardousAir:"বিপজ্জনক",
+noAlerts:"পূর্বাভাসে উল্লেখযোগ্য আবহাওয়াজনিত ঝুঁকি পাওয়া যায়নি।",
+rainAlert:"শিগগির বৃষ্টি হতে পারে। ছাতা সঙ্গে রাখুন।",
+stormAlert:"বজ্রঝড়ের সম্ভাবনা রয়েছে। সতর্ক থাকুন এবং সরকারি আপডেট দেখুন।",
+heatAlert:"তাপমাত্রা বেশি থাকতে পারে। পর্যাপ্ত পানি পান করুন।",
+coldAlert:"তাপমাত্রা কম থাকতে পারে। উপযুক্ত পোশাক পরুন।",
+windAlert:"বাতাসের গতি বেশি হতে পারে। গাছ ও আলগা বস্তু থেকে সাবধান থাকুন।",
+uvAlert:"UV সূচক বেশি। বাইরে গেলে সূর্যরোধী ব্যবস্থা নিন।",
+aqiAlert:"বায়ুর মান খারাপ। সংবেদনশীল ব্যক্তিদের বাইরে পরিশ্রম কমানো উচিত।",
+clear:"পরিষ্কার আকাশ",
+mainlyClear:"প্রধানত পরিষ্কার",
+partlyCloudy:"আংশিক মেঘলা",
+overcast:"মেঘাচ্ছন্ন",
+fog:"কুয়াশা",
+drizzle:"গুঁড়ি গুঁড়ি বৃষ্টি",
+freezingDrizzle:"হিমশীতল গুঁড়ি বৃষ্টি",
+rain:"বৃষ্টি",
+freezingRain:"হিমশীতল বৃষ্টি",
+snow:"তুষারপাত",
+rainShowers:"বৃষ্টির ঝাপটা",
+snowShowers:"তুষারপাতের ঝাপটা",
+thunderstorm:"বজ্রঝড়",
+unknown:"আবহাওয়ার অবস্থা",
+now:"এখন"
+}
+
+};
+
+let lang="en";
+
+let currentLocation={
+name:"Khulna",
+admin:"Khulna",
+country:"Bangladesh",
+latitude:22.8456,
+longitude:89.5403
+};
+
+let refreshTimer;
+
+const t=k=>translations[lang][k]||translations.en[k]||k;
+
+function setStatus(msg,error=false){
+$("status").textContent=msg;
+$("status").className="status"+(error?" error":"");
+}
+
+function weatherInfo(code){
+
+if(code===0)return ["☀️","clear"];
+if(code===1)return ["🌤️","mainlyClear"];
+if(code===2)return ["⛅","partlyCloudy"];
+if(code===3)return ["☁️","overcast"];
+
+if([45,48].includes(code))return ["🌫️","fog"];
+if([51,53,55].includes(code))return ["🌦️","drizzle"];
+if([56,57].includes(code))return ["🌧️","freezingDrizzle"];
+if([61,63,65].includes(code))return ["🌧️","rain"];
+if([66,67].includes(code))return ["🌧️","freezingRain"];
+if([71,73,75,77].includes(code))return ["❄️","snow"];
+if([80,81,82].includes(code))return ["🌦️","rainShowers"];
+if([85,86].includes(code))return ["🌨️","snowShowers"];
+if([95,96,99].includes(code))return ["⛈️","thunderstorm"];
+
+return ["🌡️","unknown"];
+}
+
+function fmtTime(iso){
+if(!iso)return "--:--";
+
+return new Date(iso).toLocaleTimeString(
+lang==="bn"?"bn-BD":"en-US",
+{hour:"numeric",minute:"2-digit"}
+);
+}
+
+function fmtDay(iso,i){
+
+if(i===0)return lang==="bn"?"আজ":"Today";
+
+return new Date(iso+"T12:00:00").toLocaleDateString(
+lang==="bn"?"bn-BD":"en-US",
+{weekday:"short"}
+);
+}
+
+function aqiInfo(v){
+
+if(v<=50)return ["goodAir","Good"];
+if(v<=100)return ["moderateAir","Moderate"];
+if(v<=150)return ["sensitiveAir","Sensitive"];
+if(v<=200)return ["unhealthyAir","Unhealthy"];
+if(v<=300)return ["veryUnhealthyAir","Very unhealthy"];
+
+return ["hazardousAir","Hazardous"];
+}
+
+async function geocode(name){
+
+const url=
+"https://geocoding-api.open-meteo.com/v1/search?name="+
+encodeURIComponent(name)+
+"&count=8&language=en&format=json";
+
+const r=await fetch(url);
+
+if(!r.ok)throw new Error("geocode");
+
+const d=await r.json();
+
+return d.results||[];
+}
+
+async function loadWeather(loc){
+
+currentLocation=loc;
+
+setStatus(t("loading"));
+
+$("dashboard").classList.add("loading");
+
+try{
+
+const base=
+"https://api.open-meteo.com/v1/forecast?latitude="+
+loc.latitude+
+"&longitude="+
+loc.longitude+
+"&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,surface_pressure,wind_speed_10m,wind_direction_10m"+
+"&hourly=temperature_2m,precipitation_probability,weather_code"+
+"&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,precipitation_probability_max"+
+"&forecast_days=7&timezone=auto";
+
+const airUrl=
+"https://air-quality-api.open-meteo.com/v1/air-quality?latitude="+
+loc.latitude+
+"&longitude="+
+loc.longitude+
+"&current=us_aqi,pm2_5,pm10,ozone,nitrogen_dioxide&timezone=auto";
+
+const [wr,ar]=await Promise.all([
+fetch(base),
+fetch(airUrl)
+]);
+
+if(!wr.ok)throw new Error("weather");
+
+const w=await wr.json();
+
+let air=null;
+
+if(ar.ok)air=await ar.json();
+
+renderWeather(w,air,loc);
+
+setStatus(t("ready"));
+
+localStorage.setItem(
+"skycast-last-location",
+JSON.stringify(loc)
+);
+
+}catch(e){
+
+console.error(e);
+
+setStatus(t("apiError"),true);
+
+}finally{
+
+$("dashboard").classList.remove("loading");
+
+}
+
+}
+
+function renderWeather(w,air,loc){
+
+const c=w.current;
+const d=w.daily;
+const h=w.hourly;
+
+const wi=weatherInfo(c.weather_code);
+
+$("place").textContent=[
+loc.name,
+loc.admin,
+loc.country
+].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join(", ");
+
+$("dateText").textContent=new Date(c.time).toLocaleString(
+lang==="bn"?"bn-BD":"en-US",
+{
+weekday:"long",
+year:"numeric",
+month:"long",
+day:"numeric",
+hour:"numeric",
+minute:"2-digit"
+}
+);
+
+$("weatherIcon").textContent=wi[0];
+
+$("temperature").textContent=Math.round(c.temperature_2m);
+
+$("condition").textContent=t(wi[1]);
+
+$("feels").textContent=Math.round(c.apparent_temperature)+"°";
+
+$("highlow").textContent=
+Math.round(d.temperature_2m_max[0])+
+"° / "+
+Math.round(d.temperature_2m_min[0])+"°";
+
+$("rainchance").textContent=
+(d.precipitation_probability_max?.[0]??0)+"%";
+
+$("updated").textContent=fmtTime(c.time);
+
+$("humidity").textContent=c.relative_humidity_2m+"%";
+
+$("wind").textContent=Math.round(c.wind_speed_10m)+" km/h";
+
+$("pressure").textContent=Math.round(c.surface_pressure)+" hPa";
+
+$("uv").textContent=d.uv_index_max?.[0]?.toFixed(1)??"--";
+
+$("sunrise").textContent=fmtTime(d.sunrise?.[0]);
+
+$("sunset").textContent=fmtTime(d.sunset?.[0]);
+
+$("coords").textContent=
+loc.latitude.toFixed(2)+", "+loc.longitude.toFixed(2);
+
+const lat=loc.latitude;
+const lon=loc.longitude;
+const delta=.12;
+
+$("map").src=
+"https://www.openstreetmap.org/export/embed.html?bbox="+
+(lon-delta)+","+
+(lat-delta)+","+
+(lon+delta)+","+
+(lat+delta)+
+"&layer=mapnik&marker="+lat+","+lon;
+
+renderHourly(h,c.time);
+renderWeek(d);
+renderAir(air);
+renderAlerts(w,air);
+
+}
+
+function renderHourly(h,now){
+
+const start=Math.max(0,h.time.findIndex(x=>x>=now));
+
+const arr=h.time.slice(start,start+24);
+
+$("hourly").innerHTML=arr.map((time,j)=>{
+
+const i=start+j;
+
+const wi=weatherInfo(h.weather_code[i]);
+
+return `
+<div class="hour">
+<small>${j===0?t("now"):fmtTime(time)}</small>
+<div class="hicon">${wi[0]}</div>
+<b>${Math.round(h.temperature_2m[i])}°</b>
+<small>☔ ${h.precipitation_probability?.[i]??0}%</small>
+</div>
+`;
+
+}).join("");
+
+}
+
+function renderWeek(d){
+
+const max=Math.max(...d.temperature_2m_max);
+
+const min=Math.min(...d.temperature_2m_min);
+
+$("week").innerHTML=d.time.map((day,i)=>{
+
+const wi=weatherInfo(d.weather_code[i]);
+
+const left=
+((d.temperature_2m_min[i]-min)/(max-min||1))*55;
+
+const width=Math.max(
+15,
+((d.temperature_2m_max[i]-d.temperature_2m_min[i])/(max-min||1))*100
+);
+
+return `
+<div class="day">
+
+<div class="dayname">${fmtDay(day,i)}</div>
+
+<div>
+<span class="dayicon">${wi[0]}</span>
+</div>
+
+<div class="range"
+title="${Math.round(d.temperature_2m_min[i])}° to ${Math.round(d.temperature_2m_max[i])}°">
+
+<span style="
+position:absolute;
+left:${left}%;
+width:${Math.min(width,100-left)}%;
+height:7px;
+border-radius:20px;
+background:linear-gradient(90deg,#6fc5ee,#f3bf65)">
+</span>
+
+</div>
+
+<div class="daytemps">
+${Math.round(d.temperature_2m_min[i])}° /
+${Math.round(d.temperature_2m_max[i])}°
+</div>
+
+</div>
+`;
+
+}).join("");
+
+}
+
+function renderAir(a){
+
+if(!a?.current){
+
+$("aqiValue").textContent="N/A";
+
+$("aqiLabel").textContent="Air quality data unavailable";
+
+$("aqiAdvice").textContent="";
+
+return;
+}
+
+const c=a.current;
+
+const v=Math.round(c.us_aqi??0);
+
+const info=aqiInfo(v);
+
+$("aqiValue").textContent=v;
+
+$("aqiLabel").textContent=t(info[0]);
+
+$("aqiBar").style.width=Math.min(100,v/3.5)+"%";
+
+$("aqiAdvice").textContent=
+v>100?t("aqiAlert"):"";
+
+$("pm25").textContent=(c.pm2_5??"--")+" µg/m³";
+
+$("pm10").textContent=(c.pm10??"--")+" µg/m³";
+
+$("ozone").textContent=(c.ozone??"--")+" µg/m³";
+
+$("no2").textContent=(c.nitrogen_dioxide??"--")+" µg/m³";
+
+}
+
+function renderAlerts(w,air){
+
+const c=w.current;
+const d=w.daily;
+
+const items=[];
+
+const rain=d.precipitation_probability_max?.[0]??0;
+const uv=d.uv_index_max?.[0]??0;
+const code=c.weather_code;
+const temp=c.temperature_2m;
+const wind=c.wind_speed_10m;
+const aqi=air?.current?.us_aqi??0;
+
+if([95,96,99].includes(code)){
+
+items.push(["⛈️","bad","stormAlert"]);
+
+}else if(rain>=60||[61,63,65,80,81,82].includes(code)){
+
+items.push(["🌧️","warn","rainAlert"]);
+
+}
+
+if(temp>=36)items.push(["🥵","warn","heatAlert"]);
+
+if(temp<=8)items.push(["🥶","warn","coldAlert"]);
+
+if(wind>=40)items.push(["💨","warn","windAlert"]);
+
+if(uv>=8)items.push(["☀️","warn","uvAlert"]);
+
+if(aqi>100)items.push(["😷","warn","aqiAlert"]);
+
+$("alerts").innerHTML=items.length?
+
+items.map(x=>`
+<div class="alert ${x[1]}">
+<span class="alerticon">${x[0]}</span>
+<span>${t(x[2])}</span>
+</div>
+`).join("")
+
+:
+
+`<div class="alert good">
+<span class="alerticon">✓</span>
+<span>${t("noAlerts")}</span>
+</div>`;
+
+}
+
+async function searchCity(){
+
+const q=$("cityInput").value.trim();
+
+if(!q)return;
+
+$("searchBtn").disabled=true;
+
+try{
+
+const results=await geocode(q);
+
+if(!results.length){
+
+setStatus(t("searchError"),true);
+
+return;
+}
+
+const x=results[0];
+
+await loadWeather({
+name:x.name,
+admin:x.admin1||"",
+country:x.country||"",
+latitude:x.latitude,
+longitude:x.longitude
+});
+
+}catch(e){
+
+setStatus(t("apiError"),true);
+
+}finally{
+
+$("searchBtn").disabled=false;
+
+}
+
+}
+
+function useLocation(){
+
+if(!navigator.geolocation){
+
+setStatus(t("locationError"),true);
+
+return;
+}
+
+setStatus(t("loading"));
+
+navigator.geolocation.getCurrentPosition(
+
+async p=>{
+
+try{
+
+const lat=p.coords.latitude;
+const lon=p.coords.longitude;
+
+await loadWeather({
+name:"My Location",
+admin:"",
+country:"",
+latitude:lat,
+longitude:lon
+});
+
+}catch(e){
+
+setStatus(t("apiError"),true);
+
+}
+
+},
+
+()=>setStatus(t("locationError"),true),
+
+{
+enableHighAccuracy:false,
+timeout:12000
+}
+
+);
+
+}
+
+function applyLanguage(){
+
+document.documentElement.lang=lang;
+
+$("langBtn").textContent=
+lang==="en"?"বাংলা":"English";
+
+document.querySelectorAll("[data-i18n]").forEach(el=>{
+
+const k=el.dataset.i18n;
+
+el.textContent=t(k);
+
+});
+
+$("cityInput").placeholder=
+lang==="bn"
+?"শহরের নাম লিখুন (যেমন: খুলনা, ঢাকা, লন্ডন)"
+:"Search city (e.g. Khulna, Dhaka, London)";
+
+}
+
+// Button events
+
+$("searchBtn").addEventListener("click",searchCity);
+
+$("cityInput").addEventListener("keydown",e=>{
+
+if(e.key==="Enter")searchCity();
+
+});
+
+$("locationBtn").addEventListener("click",useLocation);
+
+$("langBtn").addEventListener("click",()=>{
+
+lang=lang==="en"?"bn":"en";
+
+applyLanguage();
+
+loadWeather(currentLocation);
+
+});
+
+$("themeBtn").addEventListener("click",()=>{
+
+document.body.classList.toggle("dark");
+
+const dark=document.body.classList.contains("dark");
+
+$("themeBtn").textContent=dark?"☀️":"🌙";
+
+localStorage.setItem(
+"skycast-theme",
+dark?"dark":"light"
+);
+
+});
+
+// Restore saved theme
+
+if(localStorage.getItem("skycast-theme")==="dark"){
+
+document.body.classList.add("dark");
+
+$("themeBtn").textContent="☀️";
+
+}
+
+// Restore last searched location
+
+try{
+
+const saved=JSON.parse(
+localStorage.getItem("skycast-last-location")||"null"
+);
+
+if(saved)currentLocation=saved;
+
+}catch(e){
+
+console.log("No saved location found.");
+
+}
+
+// Start application
+
+applyLanguage();
+
+loadWeather(currentLocation);
+
+// Auto refresh every 15 minutes
+
+refreshTimer=setInterval(
+()=>loadWeather(currentLocation),
+15*60*1000
+);
+
+</script>
+
+</body>
+</html>
